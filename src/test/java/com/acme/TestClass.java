@@ -19,6 +19,10 @@ public class TestClass {
 	public TestClass(Double bla) {
 		LOG.info("bla=" + bla);
 	}
+	
+	public TestClass(int[] bla) {
+		LOG.info("bla=" + bla);
+	}
 
 	public TestClass() {
 		LOG.info("invoked");
@@ -57,8 +61,12 @@ public class TestClass {
 		LOG.info("bla=" + bla);
 	}
 
-	public void testMethod3(int bli) {
+	public void testMethod7(int bli) {
 		LOG.info("bli=" + bli);
 		int bla = 100 / bli;
+	}
+	
+	public void testMethod8(String[] bla) {
+		LOG.info("bla=" + bla);
 	}
 }
