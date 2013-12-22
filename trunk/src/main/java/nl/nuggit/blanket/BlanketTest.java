@@ -39,6 +39,8 @@ import org.apache.log4j.Logger;
  * 
  * @author Adriaan Koster
  */
+
+@SuppressWarnings("unchecked")
 public class BlanketTest {
 
 	private static final Logger LOG = Logger.getLogger(BlanketTest.class);
@@ -55,7 +57,7 @@ public class BlanketTest {
 	 * @throws ClassNotFoundException
 	 *             if there was a problem
 	 */
-	public static void execute(String rootPackage) throws ClassNotFoundException {
+	public static Report execute(String rootPackage) throws ClassNotFoundException {
 		LOG.info("Starting");
 		List<Class> classes = ClassFinder.findClassesForPackage(rootPackage);
 		Report report = new Report();
@@ -72,6 +74,7 @@ public class BlanketTest {
 		}
 		report.log();
 		LOG.info("Done");
+		return report;
 	}
 
 	private static void checkClass(Class clazz, Report report) {
@@ -113,7 +116,6 @@ public class BlanketTest {
 			Class[] parameterTypes = method.getParameterTypes();
 			String signature = Arrays.toString(parameterTypes);
 			for (Object instance : instances) {
-				Object[] parameters = null;
 				LOG.debug("Invoking method: " + method.getName() + "(" + signature + ")");
 				List<Object[]> valueSets = createValueSets(parameterTypes);
 				for (Object[] values : valueSets) {

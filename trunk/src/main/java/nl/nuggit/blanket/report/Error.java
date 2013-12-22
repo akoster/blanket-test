@@ -81,18 +81,22 @@ public class Error {
 		return description;
 	}
 
+	private String id() {
+		return String.format("%s%s%s%s", error, className, methodName, signature);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null || !(obj instanceof Error)) {
 			return false;
 		}
 		Error other = (Error) obj;
-		return getDescription().equals(other.getDescription());
+		return id().equals(other.id());
 	}
 
 	@Override
 	public int hashCode() {
-		return getDescription().hashCode();
+		return id().hashCode();
 	}
 
 }
