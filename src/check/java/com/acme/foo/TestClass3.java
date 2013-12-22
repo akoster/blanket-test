@@ -1,4 +1,4 @@
-package com.acme;
+package com.acme.foo;
 
 import java.io.File;
 import java.util.Set;
