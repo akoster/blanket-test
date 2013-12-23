@@ -1,5 +1,6 @@
 package nl.nuggit.blanket;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -41,9 +42,9 @@ import org.apache.log4j.Logger;
  */
 
 @SuppressWarnings("unchecked")
-public class BlanketTest {
+public class Tester {
 
-	private static final Logger LOG = Logger.getLogger(BlanketTest.class);
+	private static final Logger LOG = Logger.getLogger(Tester.class);
 
 	private static Fixture[] FIXTURES = new Fixture[] { new BooleanFixture(), new ByteFixture(),
 			new CharacterFixture(), new DoubleFixture(), new FloatFixture(), new IntegerFixture(), new LongFixture(),
@@ -57,12 +58,15 @@ public class BlanketTest {
 	 * @throws ClassNotFoundException
 	 *             if there was a problem
 	 */
-	public static Report execute(String rootPackage) throws ClassNotFoundException {
+	public static Report execute(String rootPackage, Class caller) throws ClassNotFoundException {
 		LOG.info("Starting");
-		List<Class> classes = ClassFinder.findClassesForPackage(rootPackage);
 		Report report = new Report();
+		List<Class> classes = ClassFinder.findClassesForPackage(rootPackage, report);
 		for (Class clazz : classes) {
-			if (clazz.getName().equals(BlanketTest.class.getName())) {
+			if (clazz.getName().equals(Tester.class.getName())) {
+				continue;
+			}
+			if (clazz.getName().equals(caller.getName())) {
 				continue;
 			}
 			if (!Modifier.isPublic(clazz.getModifiers())) {
@@ -78,7 +82,6 @@ public class BlanketTest {
 	}
 
 	private static void checkClass(Class clazz, Report report) {
-		report.addClass(clazz);
 		List<Object> instances = checkConstructors(clazz, report);
 		checkMethods(clazz, instances, report);
 	}
@@ -96,10 +99,9 @@ public class BlanketTest {
 			List<Object[]> valueSets = createValueSets(parameterTypes);
 			for (Object[] values : valueSets) {
 				LOG.debug("params: " + Arrays.toString(values));
-				try {
-					instances.add(constructor.newInstance(values));
-				} catch (Exception e) {
-					report.addError(clazz, new Error(signature, values, e));
+				Throwable throwable = ClassCaller.callClass(constructor, instances, values);
+				if (throwable != null) {
+					report.addError(clazz, new Error(signature, values, throwable));
 				}
 			}
 		}
@@ -120,10 +122,9 @@ public class BlanketTest {
 				List<Object[]> valueSets = createValueSets(parameterTypes);
 				for (Object[] values : valueSets) {
 					LOG.debug("params: " + Arrays.toString(values));
-					try {
-						method.invoke(instance, values);
-					} catch (Exception e) {
-						report.addError(clazz, new Error(signature, values, e));
+					Throwable throwable = ClassCaller.callClass(method, instance, values);
+					if (throwable != null) {
+						report.addError(clazz, new Error(signature, values, throwable));
 					}
 				}
 			}
@@ -183,6 +184,6 @@ public class BlanketTest {
 			LOG.setLevel(Level.toLevel(logLevel));
 		}
 
-		execute(args[0]);
+		execute(args[0], Tester.class);
 	}
 }

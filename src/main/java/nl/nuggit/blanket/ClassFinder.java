@@ -13,14 +13,21 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import nl.nuggit.blanket.report.Error;
+import nl.nuggit.blanket.report.Report;
+
+import org.apache.log4j.Logger;
+
 /**
  * Utility that finds classes within or under a given package
  * 
  * @author Adriaan
  */
-public class ClassFinder {
+class ClassFinder {
 
-	public static List<Class> findClassesForPackage(String packagename) throws ClassNotFoundException {
+	private static final Logger LOG = Logger.getLogger(ClassFinder.class);
+
+	static List<Class> findClassesForPackage(String packagename, Report report) throws ClassNotFoundException {
 		// 'classes' will hold a list of directories matching the package name.
 		// There may be more than one if a package is split over multiple
 		// jars/paths
@@ -39,11 +46,19 @@ public class ClassFinder {
 				if (res.getProtocol().equalsIgnoreCase("jar")) {
 					JarURLConnection conn = (JarURLConnection) res.openConnection();
 					JarFile jar = conn.getJarFile();
-					for (JarEntry e : Collections.list(jar.entries())) {
-						if (e.getName().startsWith(path) && e.getName().endsWith(".class")
-								&& !e.getName().contains("$")) {
-							String className = e.getName().replace("/", ".").substring(0, e.getName().length() - 6);
-							classes.add(Class.forName(className));
+					for (JarEntry entry : Collections.list(jar.entries())) {
+						if (entry.getName().startsWith(path) && entry.getName().endsWith(".class")
+								&& !entry.getName().contains("$")) {
+							String className = entry.getName().replace("/", ".").substring(0,
+									entry.getName().length() - 6);
+							LOG.debug("Adding JAR className " + className);
+							try {
+								Class<?> clazz = Class.forName(className);
+								classes.add(clazz);
+								report.addClass(className);
+							} catch (Throwable e) {
+								report.addError(className, new Error("Class.forName", new Object[] { className }, e));
+							}
 						}
 					}
 				} else
@@ -68,7 +83,14 @@ public class ClassFinder {
 					if (file.isFile() && fileName.endsWith(".class")) {
 						// removes the .class extension
 						String className = packagename + '.' + fileName.substring(0, fileName.length() - 6);
-						classes.add(Class.forName(className));
+						LOG.debug("Adding FILE className " + className);
+						try {
+							Class<?> clazz = Class.forName(className);
+							classes.add(clazz);
+							report.addClass(className);
+						} catch (Throwable e) {
+							report.addError(className, new Error("Class.forName", new Object[] { className }, e));
+						}
 					}
 					// keep track of subdirectories
 					if (file.isDirectory()) {
@@ -82,7 +104,7 @@ public class ClassFinder {
 		}
 		// check all potential subpackages
 		for (String subPackage : subPackages) {
-			classes.addAll(findClassesForPackage(subPackage));
+			classes.addAll(findClassesForPackage(subPackage, report));
 		}
 		return classes;
 	}
