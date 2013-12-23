@@ -6,7 +6,7 @@ public class Error {
 
 	private String signature;
 	private Object[] values;
-	private Exception exception;
+	private Throwable exception;
 	private String className;
 	private String methodName;
 	private String fileName;
@@ -14,7 +14,7 @@ public class Error {
 	private String error;
 	private String description;
 
-	public Error(String signature, Object[] values, Exception exception) {
+	public Error(String signature, Object[] values, Throwable exception) {
 		this.signature = signature;
 		this.values = values;
 		this.exception = exception;
@@ -34,9 +34,9 @@ public class Error {
 		this.lineNumber = rootElement.getLineNumber();
 	}
 
-	private static StackTraceElement getRootElement(Exception e, StackTraceElement element, StackTraceElement[] elements) {
+	private static StackTraceElement getRootElement(Throwable e, StackTraceElement element, StackTraceElement[] elements) {
 		if (elements != null && elements.length > 0) {
-			element = e.getCause().getStackTrace()[0];
+			element = elements[0];
 		}
 		return element;
 	}
@@ -49,7 +49,7 @@ public class Error {
 		return values;
 	}
 
-	public Exception getException() {
+	public Throwable getException() {
 		return exception;
 	}
 

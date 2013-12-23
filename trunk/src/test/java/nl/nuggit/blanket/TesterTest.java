@@ -2,11 +2,11 @@ package nl.nuggit.blanket;
 
 import org.junit.Test;
 
-public class BlanketTestTest {
+public class TesterTest {
 
 	@Test
 	public void testExecute() throws ClassNotFoundException {
-		BlanketTest.execute("com.acme.foo");
+		Tester.execute("com.acme.foo", this.getClass());
 	}
 
 }
