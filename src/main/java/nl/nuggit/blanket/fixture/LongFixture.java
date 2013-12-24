@@ -2,15 +2,16 @@ package nl.nuggit.blanket.fixture;
 
 public class LongFixture extends BaseFixture {
 
-	private Long[] values = new Long[] { 0L, Long.MAX_VALUE, Long.MIN_VALUE };
+	private ParamValue[] values = new ParamValue[] { new ParamValue((long) 0, "zero long"),
+			new ParamValue(Long.MAX_VALUE, "maximum long"), new ParamValue(Long.MIN_VALUE, "minimum long") };
 
 	@Override
-	Object[] values(Class clazz) {
+	ParamValue[] values(Class<?> clazz) {
 		return values;
 	}
 
 	@Override
-	public boolean handles(Class clazz) {
+	public boolean handles(Class<?> clazz) {
 		return clazz.equals(Long.TYPE) || clazz.equals(Long.class);
 	}
 }

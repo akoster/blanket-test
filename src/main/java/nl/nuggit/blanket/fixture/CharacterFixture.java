@@ -2,15 +2,17 @@ package nl.nuggit.blanket.fixture;
 
 public class CharacterFixture extends BaseFixture {
 
-	private Character[] values = new Character[] { 'a', Character.MAX_VALUE, Character.MIN_VALUE };
+	private ParamValue[] values = new ParamValue[] { new ParamValue('a', "character"),
+			new ParamValue(Character.MAX_VALUE, "maximum character"),
+			new ParamValue(Character.MIN_VALUE, "minimum character") };
 
 	@Override
-	Object[] values(Class clazz) {
+	ParamValue[] values(Class<?> clazz) {
 		return values;
 	}
 
 	@Override
-	public boolean handles(Class clazz) {
+	public boolean handles(Class<?> clazz) {
 		return clazz.equals(Character.TYPE) || clazz.equals(Character.class);
 	}
 }

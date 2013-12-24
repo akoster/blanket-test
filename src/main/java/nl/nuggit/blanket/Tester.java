@@ -1,6 +1,5 @@
 package nl.nuggit.blanket;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -18,6 +17,7 @@ import nl.nuggit.blanket.fixture.Fixture;
 import nl.nuggit.blanket.fixture.FloatFixture;
 import nl.nuggit.blanket.fixture.IntegerFixture;
 import nl.nuggit.blanket.fixture.LongFixture;
+import nl.nuggit.blanket.fixture.ParamSet;
 import nl.nuggit.blanket.fixture.ShortFixture;
 import nl.nuggit.blanket.fixture.VoidFixture;
 import nl.nuggit.blanket.report.Error;
@@ -58,11 +58,11 @@ public class Tester {
 	 * @throws ClassNotFoundException
 	 *             if there was a problem
 	 */
-	public static Report execute(String rootPackage, Class caller) throws ClassNotFoundException {
+	public static Report execute(String rootPackage, Class<?> caller) throws ClassNotFoundException {
 		LOG.info("Starting");
 		Report report = new Report();
-		List<Class> classes = ClassFinder.findClassesForPackage(rootPackage, report);
-		for (Class clazz : classes) {
+		List<Class<?>> classes = ClassFinder.findClassesForPackage(rootPackage, report);
+		for (Class<?> clazz : classes) {
 			if (clazz.getName().equals(Tester.class.getName())) {
 				continue;
 			}
@@ -81,27 +81,27 @@ public class Tester {
 		return report;
 	}
 
-	private static void checkClass(Class clazz, Report report) {
+	private static void checkClass(Class<?> clazz, Report report) {
 		List<Object> instances = checkConstructors(clazz, report);
 		checkMethods(clazz, instances, report);
 	}
 
-	private static List<Object> checkConstructors(Class clazz, Report report) {
+	private static List<Object> checkConstructors(Class<?> clazz, Report report) {
 		Constructor[] constructors = clazz.getConstructors();
 		List<Object> instances = new ArrayList<Object>();
 		for (Constructor constructor : constructors) {
 			if (!Modifier.isPublic(constructor.getModifiers())) {
 				continue;
 			}
-			Class[] parameterTypes = constructor.getParameterTypes();
+			Class<?>[] parameterTypes = constructor.getParameterTypes();
 			String signature = Arrays.toString(parameterTypes);
 			LOG.debug("Invoking constructor: " + constructor.getName() + signature);
-			List<Object[]> valueSets = createValueSets(parameterTypes);
-			for (Object[] values : valueSets) {
-				LOG.debug("params: " + Arrays.toString(values));
-				Throwable throwable = ClassCaller.callClass(constructor, instances, values);
+			List<ParamSet> paramSets = createValueSets(parameterTypes);
+			for (ParamSet paramSet : paramSets) {
+				LOG.debug("params: " + paramSet);
+				Throwable throwable = ClassCaller.callClass(constructor, instances, paramSet.getValues());
 				if (throwable != null) {
-					report.addError(clazz, new Error(signature, values, throwable));
+					report.addError(clazz, new Error(signature, paramSet, throwable));
 				}
 			}
 		}
@@ -109,33 +109,33 @@ public class Tester {
 		return instances;
 	}
 
-	private static void checkMethods(Class clazz, List<Object> instances, Report report) {
+	private static void checkMethods(Class<?> clazz, List<Object> instances, Report report) {
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
 			if (!Modifier.isPublic(method.getModifiers())) {
 				continue;
 			}
-			Class[] parameterTypes = method.getParameterTypes();
+			Class<?>[] parameterTypes = method.getParameterTypes();
 			String signature = Arrays.toString(parameterTypes);
 			for (Object instance : instances) {
 				LOG.debug("Invoking method: " + method.getName() + "(" + signature + ")");
-				List<Object[]> valueSets = createValueSets(parameterTypes);
-				for (Object[] values : valueSets) {
-					LOG.debug("params: " + Arrays.toString(values));
-					Throwable throwable = ClassCaller.callClass(method, instance, values);
+				List<ParamSet> paramSets = createValueSets(parameterTypes);
+				for (ParamSet paramSet : paramSets) {
+					LOG.debug("params: " + paramSet);
+					Throwable throwable = ClassCaller.callClass(method, instance, paramSet.getValues());
 					if (throwable != null) {
-						report.addError(clazz, new Error(signature, values, throwable));
+						report.addError(clazz, new Error(signature, paramSet, throwable));
 					}
 				}
 			}
 		}
 	}
 
-	private static List<Object[]> createValueSets(Class[] paramTypes) {
-		List<Object[]> paramSets = new ArrayList<Object[]>();
+	private static List<ParamSet> createValueSets(Class<?>[] paramTypes) {
+		List<ParamSet> paramSets = new ArrayList<ParamSet>();
 		int paramCount = paramTypes.length;
 		if (paramCount == 0) {
-			paramSets.add(new Object[] {});
+			paramSets.add(new ParamSet());
 			return paramSets;
 		}
 		Fixture[] fixtures = new Fixture[paramCount];
@@ -143,10 +143,11 @@ public class Tester {
 			Fixture fixture = findFixture(paramTypes[i]);
 			fixtures[i] = fixture;
 		}
+		// let each fixture emit all its test values
 		while (haveNotAllCycled(fixtures)) {
-			Object[] paramSet = new Object[paramCount];
+			ParamSet paramSet = new ParamSet();
 			for (int i = 0; i < paramCount; i++) {
-				paramSet[i] = fixtures[i].nextValue();
+				paramSet.addParamValue(fixtures[i].nextValue());
 			}
 			paramSets.add(paramSet);
 		}
@@ -162,7 +163,7 @@ public class Tester {
 		return false;
 	}
 
-	private static Fixture findFixture(Class paramType) {
+	private static Fixture findFixture(Class<?> paramType) {
 		for (Fixture fixture : FIXTURES) {
 			if (fixture.handles(paramType)) {
 				fixture.reset(paramType);

@@ -5,9 +5,9 @@ public abstract class BaseFixture implements Fixture {
 
 	boolean hasCycled = false;
 	private int index;
-	private Class clazz;
+	private Class<?> clazz;
 
-	abstract Object[] values(Class clazz);
+	abstract ParamValue[] values(Class<?> clazz);
 	
 	@Override
 	public boolean hasCycled() {
@@ -15,7 +15,7 @@ public abstract class BaseFixture implements Fixture {
 	}
 
 	@Override
-	public Object nextValue() {
+	public ParamValue nextValue() {
 		if (index >= values(clazz).length) {
 			index = 0;
 			hasCycled = true;
@@ -24,7 +24,7 @@ public abstract class BaseFixture implements Fixture {
 	}
 
 	@Override
-	public void reset(Class clazz) {
+	public void reset(Class<?> clazz) {
 		this.clazz = clazz;
 		index = 0;
 		hasCycled = false;
