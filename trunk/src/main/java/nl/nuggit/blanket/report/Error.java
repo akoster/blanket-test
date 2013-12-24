@@ -1,12 +1,12 @@
 package nl.nuggit.blanket.report;
 
-import java.util.Arrays;
+import nl.nuggit.blanket.fixture.ParamSet;
 
 public class Error {
 
 	private String signature;
-	private Object[] values;
-	private Throwable exception;
+	private ParamSet paramSet;
+	private Throwable throwable;
 	private String className;
 	private String methodName;
 	private String fileName;
@@ -14,19 +14,23 @@ public class Error {
 	private String error;
 	private String description;
 
-	public Error(String signature, Object[] values, Throwable exception) {
+	public Error(String signature, ParamSet paramSet, Throwable throwable) {
 		this.signature = signature;
-		this.values = values;
-		this.exception = exception;
+		this.paramSet = paramSet;
+		this.throwable = throwable;
+		parseStackTrace(throwable);
+	}
+
+	private void parseStackTrace(Throwable throwable) {
 		StackTraceElement rootElement = null;
-		if (exception.getCause() != null) {
-			error = exception.getCause().getClass().getName();
-			StackTraceElement[] elements = exception.getCause().getStackTrace();
-			rootElement = getRootElement(exception, rootElement, elements);
+		if (throwable.getCause() != null) {
+			error = throwable.getCause().getClass().getName();
+			StackTraceElement[] elements = throwable.getCause().getStackTrace();
+			rootElement = getRootElement(throwable, rootElement, elements);
 		} else {
-			error = exception.getClass().getName();
-			StackTraceElement[] elements = exception.getStackTrace();
-			rootElement = getRootElement(exception, rootElement, elements);
+			error = throwable.getClass().getName();
+			StackTraceElement[] elements = throwable.getStackTrace();
+			rootElement = getRootElement(throwable, rootElement, elements);
 		}
 		this.className = rootElement.getClassName();
 		this.methodName = rootElement.getMethodName();
@@ -45,12 +49,12 @@ public class Error {
 		return signature;
 	}
 
-	public Object[] getValues() {
-		return values;
+	public ParamSet getParamSet() {
+		return paramSet;
 	}
 
-	public Throwable getException() {
-		return exception;
+	public Throwable getThrowable() {
+		return throwable;
 	}
 
 	public String getClassName() {
@@ -76,7 +80,7 @@ public class Error {
 	public String getDescription() {
 		if (description == null) {
 			description = String.format("Encountered: %s invoking %s.%s%s with values %s (see %s:%s)", error,
-					className, methodName, signature, Arrays.toString(values), fileName, lineNumber);
+					className, methodName, signature, paramSet, fileName, lineNumber);
 		}
 		return description;
 	}

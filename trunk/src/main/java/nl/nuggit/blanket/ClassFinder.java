@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import nl.nuggit.blanket.fixture.ParamSet;
+import nl.nuggit.blanket.fixture.ParamValue;
 import nl.nuggit.blanket.report.Error;
 import nl.nuggit.blanket.report.Report;
 
@@ -27,11 +29,11 @@ class ClassFinder {
 
 	private static final Logger LOG = Logger.getLogger(ClassFinder.class);
 
-	static List<Class> findClassesForPackage(String packagename, Report report) throws ClassNotFoundException {
+	static List<Class<?>> findClassesForPackage(String packagename, Report report) throws ClassNotFoundException {
 		// 'classes' will hold a list of directories matching the package name.
 		// There may be more than one if a package is split over multiple
 		// jars/paths
-		List<Class> classes = new ArrayList<Class>();
+		List<Class<?>> classes = new ArrayList<Class<?>>();
 		List<File> directories = new ArrayList<File>();
 		try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -56,8 +58,10 @@ class ClassFinder {
 								Class<?> clazz = Class.forName(className);
 								classes.add(clazz);
 								report.addClass(className);
-							} catch (Throwable e) {
-								report.addError(className, new Error("Class.forName", new Object[] { className }, e));
+							} catch (Throwable throwable) {
+								ParamSet params = new ParamSet();
+								params.addParamValue(new ParamValue(className, "fully qualified classname"));
+								report.addError(className, new Error("Class.forName()", params, throwable));
 							}
 						}
 					}
@@ -88,8 +92,10 @@ class ClassFinder {
 							Class<?> clazz = Class.forName(className);
 							classes.add(clazz);
 							report.addClass(className);
-						} catch (Throwable e) {
-							report.addError(className, new Error("Class.forName", new Object[] { className }, e));
+						} catch (Throwable throwable) {
+							ParamSet params = new ParamSet();
+							params.addParamValue(new ParamValue(className, "fully qualified classname"));
+							report.addError(className, new Error("Class.forName()", params, throwable));
 						}
 					}
 					// keep track of subdirectories

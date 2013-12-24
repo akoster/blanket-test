@@ -7,21 +7,18 @@ import java.util.List;
 
 public class ArrayFixture extends BaseFixture {
 
-	private Object[] values = new Object[] { null };
-
 	@Override
-	public boolean handles(Class clazz) {
+	public boolean handles(Class<?> clazz) {
 		return clazz.isArray();
 	}
 	
 	@Override
-	Object[] values(Class type) {
-		List<Object> values = new ArrayList<Object>();
-		Class arrayType = type.getComponentType();
-		// empty array
-		values.add(Array.newInstance(arrayType, 0));
+	ParamValue[] values(Class<?> type) {
+		List<ParamValue> values = new ArrayList<ParamValue>();
+		Class<?> arrayType = type.getComponentType();
+		values.add(new ParamValue(Array.newInstance(arrayType, 0), "empty array"));
 		// array of length 1 with a null value
-		values.add(Array.newInstance(arrayType, 1));
+		values.add(new ParamValue(Array.newInstance(arrayType, 1), ""));
 		// array of length 1 with a non-null value
 		Object filledArray = Array.newInstance(arrayType, 1);
 		if (arrayType.equals(Boolean.TYPE)) {
@@ -43,16 +40,16 @@ public class ArrayFixture extends BaseFixture {
 		} else if (!arrayType.isPrimitive()) {
 			Array.set(filledArray, 0, createComplexInstance(arrayType));
 		}
-		values.add(filledArray);
+		values.add(new ParamValue(filledArray, "filled array"));
 		
-		return values.toArray();
+		return values.toArray(new ParamValue[values.size()]);
 	}
 	
-	private static Object createComplexInstance(Class arrayType) {
+	private static Object createComplexInstance(Class<?> arrayType) {
 		Object value = null;
 		// try to create an instance
-		for (Constructor constructor : arrayType.getConstructors()) {
-			Class[] parameterTypes = constructor.getParameterTypes();
+		for (Constructor<?> constructor : arrayType.getConstructors()) {
+			Class<?>[] parameterTypes = constructor.getParameterTypes();
 			Object[] parameters = createParameters(parameterTypes);
 			try {
 				value = constructor.newInstance(parameters);
@@ -64,10 +61,10 @@ public class ArrayFixture extends BaseFixture {
 		return value;
 	}
 
-	private static Object[] createParameters(Class[] paramTypes) {
+	private static Object[] createParameters(Class<?>[] paramTypes) {
 		Object[] params = new Object[paramTypes.length];
 		for (int i = 0; i < paramTypes.length; i++) {
-			Class paramType = paramTypes[i];
+			Class<?> paramType = paramTypes[i];
 			if (paramType.isPrimitive()) {
 				if (paramType.equals(Boolean.TYPE)) {
 					params[i] = false;

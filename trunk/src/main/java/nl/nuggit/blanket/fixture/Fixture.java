@@ -5,7 +5,7 @@ public interface Fixture {
 	/**
 	 * @return true if this fixture can handle the class
 	 */
-	boolean handles(Class clazz);
+	boolean handles(Class<?> clazz);
 
 	/**
 	 * @return the number of possible values in this fixture
@@ -17,7 +17,7 @@ public interface Fixture {
 	 * 
 	 * @return an iterator
 	 */
-	Object nextValue();
+	ParamValue nextValue();
 	
 	/**
 	 * @return true if all possible values have been returned
@@ -27,5 +27,5 @@ public interface Fixture {
 	/**
 	 * Resets this fixture with the given class
 	 */
-	void reset(Class clazz);
+	void reset(Class<?> clazz);
 }
