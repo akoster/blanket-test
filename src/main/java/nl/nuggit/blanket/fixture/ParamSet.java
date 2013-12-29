@@ -20,9 +20,21 @@ public class ParamSet {
 	public Object[] getValues() {
 		return values.toArray(new Object[values.size()]);
 	}
-	
+
 	@Override
 	public String toString() {
-		return Arrays.toString(getValues());
+		StringBuilder sb = new StringBuilder();
+		String sep = "";
+		sb.append("[");
+		for (ParamValue value : paramValues) {
+			sb.append(sep);
+			sb.append(value.getValue());
+			sb.append(" (");
+			sb.append(value.getDescription());
+			sb.append(")");
+			sep = ",";
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 }

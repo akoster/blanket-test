@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link href="./main.css" rel="stylesheet" type="text/css">
+    <title>Blanket-test '$report.packageName'</title>
+  </head>
+<body>
+   
+    <h1>Blanket-test report for '$report.packageName'</h1>
+    
+    $classErrors.size() classes found.
+    $report.instances instances created.
+
+    #set( $htmlExtension = '.html' )    
+    <table border="0">
+    #foreach( $classError in $classErrors.entrySet() )
+        #if ( ! $classError.getValue() )
+            <tr class="no_error"><td>$classError.key</td><td>no errors</td></tr>
+        #else
+            <tr class="error"><td><a href="$classError.key$htmlExtension">$classError.key</a></td><td>$classError.getValue().size() errors</td></tr>
+        #end
+    #end
+    </table>
+</body>
+</html>

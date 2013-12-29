@@ -17,6 +17,8 @@ import java.util.concurrent.TimeoutException;
 @SuppressWarnings("unchecked")
 class ClassCaller implements Callable<Throwable> {
 
+	private static final int TIMEOUT_SECONDS = 1;
+
 	private static ExecutorService executor = Executors.newCachedThreadPool();
 
 	private Method method;
@@ -65,7 +67,7 @@ class ClassCaller implements Callable<Throwable> {
 		Throwable result = null;
 		Future<Throwable> future = executor.submit(task);
 		try {
-			result = future.get(5, TimeUnit.SECONDS);
+			result = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		} catch (TimeoutException ignore) {
 		} catch (InterruptedException ignore) {
 		} catch (ExecutionException ignore) {

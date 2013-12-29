@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link href="./main.css" rel="stylesheet" type="text/css">
+    <title>Blanket-test '$className'</title>
+  </head>
+<body>
+
+<h1>Blanket-test report for $className</h1>
+    #foreach( $error in $errors )
+        <b>
+            Encountered
+            $error.getError()            
+            invoking
+            $error.getRootElement().getClassName()
+            $error.getRootElement().getMethodName()
+            $error.getSignature()
+            with values
+            $error.getParamSet()
+        </b>
+        </br>
+        <pre>$error.getStackTrace()</pre>
+    #end
+    
+</body>

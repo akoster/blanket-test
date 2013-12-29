@@ -1,0 +1,9 @@
+.error, tr.error a, tr.error a:active, tr.error a:visited, tr.error a:hover {
+    text-decoration:none;
+    color:#FF0000;
+}
+
+.no_error, tr.no_error a, tr.no_error a:active, tr.no_error a:visited, tr.no_error a:hover {
+    text-decoration: none;
+    color: #00FF00;  
+} 
