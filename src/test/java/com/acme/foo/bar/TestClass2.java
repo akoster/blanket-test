@@ -1,4 +1,4 @@
-package com.acme.foo.subpackage;
+package com.acme.foo.bar;
 
 
 import java.io.File;
