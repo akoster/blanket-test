@@ -1,0 +1,1 @@
+mvn clean compile assembly:single eclipse:clean eclipse:eclipse

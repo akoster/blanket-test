@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
  * setting the property '-Dloglevel=[TRACE|DEBUG|INFO|WARN|ERROR|FATAL|OFF]
  * 
  * TODO: check for collections and try with an empty collection
+ * TODO: keep track of slow methods and reduce timeout for them when called again
  * 
  * @author Adriaan Koster
  */
@@ -60,8 +61,14 @@ public class Tester {
 	 */
 	public static Report execute(String rootPackage, Class<?> caller) throws ClassNotFoundException {
 		LOG.info("Starting");
-		Report report = new Report();
-		List<Class<?>> classes = ClassFinder.findClassesForPackage(rootPackage, report);
+		Report report = new Report(rootPackage);
+		checkClasses(caller, ClassFinder.findClassesForPackage(rootPackage, report), report);
+		report.log();
+		LOG.info("Done");
+		return report;
+	}
+
+	private static void checkClasses(Class<?> caller, List<Class<?>> classes, Report report) {
 		for (Class<?> clazz : classes) {
 			if (clazz.getName().equals(Tester.class.getName())) {
 				continue;
@@ -74,16 +81,8 @@ public class Tester {
 			}
 			LOG.debug("-------------------------------------------------------");
 			LOG.debug("Inspecting class: " + clazz.getName());
-			checkClass(clazz, report);
+			checkMethods(clazz, checkConstructors(clazz, report), report);
 		}
-		report.log();
-		LOG.info("Done");
-		return report;
-	}
-
-	private static void checkClass(Class<?> clazz, Report report) {
-		List<Object> instances = checkConstructors(clazz, report);
-		checkMethods(clazz, instances, report);
 	}
 
 	private static List<Object> checkConstructors(Class<?> clazz, Report report) {
@@ -106,6 +105,7 @@ public class Tester {
 			}
 		}
 		LOG.debug("Created " + instances.size() + " instances of " + clazz.getName());
+		report.setInstances(instances.size());
 		return instances;
 	}
 

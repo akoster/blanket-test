@@ -4,13 +4,12 @@ import nl.nuggit.blanket.fixture.ParamSet;
 
 public class Error {
 
-	private String signature;
-	private ParamSet paramSet;
-	private Throwable throwable;
-	private String className;
-	private String methodName;
-	private String fileName;
-	private int lineNumber;
+	private static final String EOL = String.format("%n");
+	private final String signature;
+	private final ParamSet paramSet;
+	private final Throwable throwable;
+	private final Throwable cause;
+	private StackTraceElement rootElement;
 	private String error;
 	private String description;
 
@@ -18,7 +17,17 @@ public class Error {
 		this.signature = signature;
 		this.paramSet = paramSet;
 		this.throwable = throwable;
+		this.cause = getCause(throwable);
 		parseStackTrace(throwable);
+	}
+
+	private Throwable getCause(Throwable throwable) {
+		Throwable cause = throwable.getCause();
+		if (cause != null) {
+			return getCause(cause);
+		} else {
+			return throwable;
+		}
 	}
 
 	private void parseStackTrace(Throwable throwable) {
@@ -32,10 +41,7 @@ public class Error {
 			StackTraceElement[] elements = throwable.getStackTrace();
 			rootElement = getRootElement(throwable, rootElement, elements);
 		}
-		this.className = rootElement.getClassName();
-		this.methodName = rootElement.getMethodName();
-		this.fileName = rootElement.getFileName();
-		this.lineNumber = rootElement.getLineNumber();
+		this.rootElement = rootElement;
 	}
 
 	private static StackTraceElement getRootElement(Throwable e, StackTraceElement element, StackTraceElement[] elements) {
@@ -57,20 +63,18 @@ public class Error {
 		return throwable;
 	}
 
-	public String getClassName() {
-		return className;
+	public Throwable getCause() {
+		return cause;
 	}
 
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public int getLineNumber() {
-		return lineNumber;
+	public String getStackTrace() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(cause.toString()).append(EOL);
+		for (StackTraceElement element : cause.getStackTrace()) {
+			sb.append("at: ");
+			sb.append(element).append(EOL);
+		}
+		return sb.toString();
 	}
 
 	public String getError() {
@@ -80,13 +84,18 @@ public class Error {
 	public String getDescription() {
 		if (description == null) {
 			description = String.format("Encountered: %s invoking %s.%s%s with values %s (see %s:%s)", error,
-					className, methodName, signature, paramSet, fileName, lineNumber);
+					rootElement.getClassName(), rootElement.getMethodName(), signature, paramSet, rootElement
+							.getFileName(), rootElement.getLineNumber());
 		}
 		return description;
 	}
 
+	public StackTraceElement getRootElement() {
+		return rootElement;
+	}
+
 	private String id() {
-		return String.format("%s%s%s%s", error, className, methodName, signature);
+		return String.format("%s%s%s%s", error, rootElement.getClassName(), rootElement.getMethodName(), signature);
 	}
 
 	@Override
