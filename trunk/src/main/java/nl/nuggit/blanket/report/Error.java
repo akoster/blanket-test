@@ -51,6 +51,16 @@ public class Error {
 		return element;
 	}
 
+	public String getStackTrace() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(cause.toString()).append(EOL);
+		for (StackTraceElement element : cause.getStackTrace()) {
+			sb.append("at: ");
+			sb.append(element).append(EOL);
+		}
+		return sb.toString();
+	}
+
 	public String getSignature() {
 		return signature;
 	}
@@ -67,16 +77,6 @@ public class Error {
 		return cause;
 	}
 
-	public String getStackTrace() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(cause.toString()).append(EOL);
-		for (StackTraceElement element : cause.getStackTrace()) {
-			sb.append("at: ");
-			sb.append(element).append(EOL);
-		}
-		return sb.toString();
-	}
-
 	public String getError() {
 		return error;
 	}
@@ -84,10 +84,41 @@ public class Error {
 	public String getDescription() {
 		if (description == null) {
 			description = String.format("Encountered: %s invoking %s.%s%s with values %s (see %s:%s)", error,
-					rootElement.getClassName(), rootElement.getMethodName(), signature, paramSet, rootElement
-							.getFileName(), rootElement.getLineNumber());
+					getClassName(), getMethodName(), signature, paramSet, getFileName(), getLineNumber());
 		}
 		return description;
+	}
+
+	public String getClassName() {
+		if (rootElement != null) {
+			return rootElement.getClassName();
+		} else {
+			return null;
+		}
+	}
+
+	public String getMethodName() {
+		if (rootElement != null) {
+			return rootElement.getMethodName();
+		} else {
+			return null;
+		}
+	}
+
+	public String getFileName() {
+		if (rootElement != null) {
+			return rootElement.getFileName();
+		} else {
+			return null;
+		}
+	}
+
+	public String getLineNumber() {
+		if (rootElement != null) {
+			return String.valueOf(rootElement.getLineNumber());
+		} else {
+			return null;
+		}
 	}
 
 	public StackTraceElement getRootElement() {
@@ -95,7 +126,7 @@ public class Error {
 	}
 
 	private String id() {
-		return String.format("%s%s%s%s", error, rootElement.getClassName(), rootElement.getMethodName(), signature);
+		return String.format("%s%s%s%s", error, getClassName(), getMethodName(), signature);
 	}
 
 	@Override
