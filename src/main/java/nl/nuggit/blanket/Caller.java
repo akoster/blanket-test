@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("unchecked")
-class ClassCaller implements Callable<Throwable> {
+class Caller implements Callable<Throwable> {
 
 	private static final int TIMEOUT_SECONDS = 1;
 
@@ -27,13 +27,13 @@ class ClassCaller implements Callable<Throwable> {
 	private Object[] values;
 	private List<Object> instances;
 
-	ClassCaller(Method method, Object instance, Object[] values) {
+	Caller(Method method, Object instance, Object[] values) {
 		this.method = method;
 		this.instance = instance;
 		this.values = values;
 	}
 
-	ClassCaller(Constructor constructor, List<Object> instances, Object[] values) {
+	Caller(Constructor constructor, List<Object> instances, Object[] values) {
 		this.constructor = constructor;
 		this.instances = instances;
 		this.values = values;
@@ -55,15 +55,15 @@ class ClassCaller implements Callable<Throwable> {
 		return result;
 	}
 
-	static Throwable callClass(Constructor constructor, List<Object> instances, Object[] values) {
-		return callClass(new ClassCaller(constructor, instances, values));
+	static Throwable callConstructor(Constructor constructor, List<Object> instances, Object[] values) {
+		return callAsync(new Caller(constructor, instances, values));
 	}
 	
-	static Throwable callClass(Method method, Object instance, Object[] values) {
-		return callClass(new ClassCaller(method, instance, values));
+	static Throwable callMethod(Method method, Object instance, Object[] values) {
+		return callAsync(new Caller(method, instance, values));
 	}
 	
-	private static Throwable callClass(Callable<Throwable> task) {
+	private static Throwable callAsync(Callable<Throwable> task) {
 		Throwable result = null;
 		Future<Throwable> future = executor.submit(task);
 		try {

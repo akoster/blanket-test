@@ -11,14 +11,14 @@ public class ArrayFixture extends BaseFixture {
 	public boolean handles(Class<?> clazz) {
 		return clazz.isArray();
 	}
-	
+
 	@Override
 	ParamValue[] values(Class<?> type) {
 		List<ParamValue> values = new ArrayList<ParamValue>();
 		Class<?> arrayType = type.getComponentType();
+		values.add(new ParamValue(null, "null"));
 		values.add(new ParamValue(Array.newInstance(arrayType, 0), "empty array"));
-		// array of length 1 with a null value
-		values.add(new ParamValue(Array.newInstance(arrayType, 1), ""));
+		values.add(new ParamValue(Array.newInstance(arrayType, 1), "array with single null"));
 		// array of length 1 with a non-null value
 		Object filledArray = Array.newInstance(arrayType, 1);
 		if (arrayType.equals(Boolean.TYPE)) {
@@ -40,11 +40,11 @@ public class ArrayFixture extends BaseFixture {
 		} else if (!arrayType.isPrimitive()) {
 			Array.set(filledArray, 0, createComplexInstance(arrayType));
 		}
-		values.add(new ParamValue(filledArray, "filled array"));
-		
+		values.add(new ParamValue(filledArray, "array with single value"));
+
 		return values.toArray(new ParamValue[values.size()]);
 	}
-	
+
 	private static Object createComplexInstance(Class<?> arrayType) {
 		Object value = null;
 		// try to create an instance

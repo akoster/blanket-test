@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
  * 
  * @author Adriaan
  */
-class ClassFinder {
+class Finder {
 
-	private static final Logger LOG = Logger.getLogger(ClassFinder.class);
+	private static final Logger LOG = Logger.getLogger(Finder.class);
 
 	static List<Class<?>> findClassesForPackage(String packagename, Report report) throws ClassNotFoundException {
 		// 'classes' will hold a list of directories matching the package name.
