@@ -1,6 +1,7 @@
 package nl.nuggit.blanket.fixture;
 
 
+
 public abstract class BaseFixture implements Fixture {
 
 	boolean hasCycled = false;
@@ -34,5 +35,7 @@ public abstract class BaseFixture implements Fixture {
 	public int valueCount() {
 		return values(clazz).length;
 	}
+	
+	
 
 }

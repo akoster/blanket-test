@@ -42,7 +42,6 @@ import org.apache.log4j.Logger;
  * @author Adriaan Koster
  */
 
-@SuppressWarnings("unchecked")
 public class Tester {
 
 	private static final Logger LOG = Logger.getLogger(Tester.class);
@@ -62,7 +61,7 @@ public class Tester {
 	public static Report execute(String rootPackage, Class<?> caller) throws ClassNotFoundException {
 		LOG.info("Starting");
 		Report report = new Report(rootPackage);
-		checkClasses(caller, ClassFinder.findClassesForPackage(rootPackage, report), report);
+		checkClasses(caller, Finder.findClassesForPackage(rootPackage, report), report);
 		report.log();
 		LOG.info("Done");
 		return report;
@@ -86,9 +85,9 @@ public class Tester {
 	}
 
 	private static List<Object> checkConstructors(Class<?> clazz, Report report) {
-		Constructor[] constructors = clazz.getConstructors();
+		Constructor<?>[] constructors = clazz.getConstructors();
 		List<Object> instances = new ArrayList<Object>();
-		for (Constructor constructor : constructors) {
+		for (Constructor<?> constructor : constructors) {
 			if (!Modifier.isPublic(constructor.getModifiers())) {
 				continue;
 			}
@@ -98,7 +97,7 @@ public class Tester {
 			List<ParamSet> paramSets = createValueSets(parameterTypes);
 			for (ParamSet paramSet : paramSets) {
 				LOG.debug("params: " + paramSet);
-				Throwable throwable = ClassCaller.callClass(constructor, instances, paramSet.getValues());
+				Throwable throwable = Caller.callConstructor(constructor, instances, paramSet.getValues());
 				if (throwable != null) {
 					report.addError(clazz, new Error(signature, paramSet, throwable));
 				}
@@ -122,7 +121,7 @@ public class Tester {
 				List<ParamSet> paramSets = createValueSets(parameterTypes);
 				for (ParamSet paramSet : paramSets) {
 					LOG.debug("params: " + paramSet);
-					Throwable throwable = ClassCaller.callClass(method, instance, paramSet.getValues());
+					Throwable throwable = Caller.callMethod(method, instance, paramSet.getValues());
 					if (throwable != null) {
 						report.addError(clazz, new Error(signature, paramSet, throwable));
 					}
