@@ -1,0 +1,1 @@
+Blanket test calls methods with risky arguments like null or zero to detect flaws in the input validation.
